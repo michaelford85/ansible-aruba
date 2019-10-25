@@ -1,0 +1,27 @@
+#https://ash-sidhu.blog/2018/11/07/using-ansible-for-automating-tasks-on-checkpoint-firewall/
+---
+- name: Playbook for testing Aruba Switch connectivity
+  hosts: aruba
+  connection: local
+  gather_facts: no
+  vars_files:
+    - ./credentials/aruba_credentials.yml
+
+  tasks:
+
+    - name: Create Aruba API Session
+      uri:
+        url: "https://{{ansible_host }}/v1/login_sessions"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+        body:
+          userName: "{{ ARUBA_USERNAME }}"
+          password: "{{ ARUBA_PASSWORD }}"
+        body_format: json
+        return_content: yes
+        validate_certs: False
+      register: login_output 
+
+    - debug:
+        var: login_output.json.sessionId
