@@ -1,0 +1,251 @@
+#https://ash-sidhu.blog/2018/11/07/using-ansible-for-automating-tasks-on-checkpoint-firewall/
+---
+- name: Upgrade Aruba Switch Firmware
+  hosts: aruba
+  connection: local
+  gather_facts: no
+  vars_files:
+    - ./credentials/aruba_credentials.yml
+
+  tasks:
+
+    - name: Create Aruba API Session (Log In)
+      uri:
+        url: "https://{{ansible_host }}/v1/login_sessions"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+        body:
+          userName: "{{ ARUBA_USERNAME }}"
+          password: "{{ ARUBA_PASSWORD }}"
+        body_format: json
+        return_content: yes
+        validate_certs: False
+      register: login_output
+
+    - name: Confirm session ID
+      debug:
+        var: login_output.json.sessionId
+
+    - name: Check image version against versions on both partitions (show ver)
+      uri:
+        url: "https://{{ansible_host }}/v1/system"
+        method: GET
+        headers:
+          Content-Type: "application/json"
+          cookie: "{{ login_output.json.sessionId }}"
+        body_format: json
+        return_content: yes
+        validate_certs: False
+      register: showver_output
+
+    - name: Confirm running firmware version
+      #device-api-v4.0/device-rest-api/schema/common/SystemInfoStats.json
+      debug:
+        var: showver_output.firmware_version
+
+    - name: Determine if the switch is L2 or L3
+      uri:
+        url: "https://{{ansible_host }}/v1/cli"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+          cookie: "{{ login_output.json.sessionId }}"
+        body_format: json
+        body:
+          cmd: show arp
+        return_content: yes
+        validate_certs: False
+      register: showarp_output
+
+    - name: Confirm output of show arp
+      debug:
+        var: showarp_output
+
+    #Check the device environment to make sure it is healthy
+    - name: Show modules
+      uri:
+        url: "https://{{ansible_host }}/v1/system/status/switch"
+        method: GET
+        headers:
+          Content-Type: "application/json"
+          cookie: "{{ login_output.json.sessionId }}"
+        body_format: json
+        return_content: yes
+        validate_certs: False
+      register: showmod_output
+
+    - name: Confirm output of show modules
+      #device-api-v4.0/device-rest-api/schema/common/SystemInfoStats.json
+      debug:
+        var: showmod_output.blades
+
+    - name: Show interface status
+      uri:
+        url: "https://{{ansible_host }}/v1/system"
+        method: GET
+        headers:
+          Content-Type: "application/json"
+          cookie: "{{ login_output.json.sessionId }}"
+        body_format: json
+        return_content: yes
+        validate_certs: False
+      register: showintstat_output
+
+    - name: Confirm output of show flash
+      #device-api-v4.0/device-rest-api/schema/common/SystemInfoStats.json
+      debug:
+        var: showver_intstat
+
+
+    - name: Show lldp remote_devices
+      uri:
+        url: "https://{{ansible_host }}/v1/system"
+        method: GET
+        headers:
+          Content-Type: "application/json"
+          cookie: "{{ login_output.json.sessionId }}"
+        body_format: json
+        return_content: yes
+        validate_certs: False
+      register: showver_output
+
+    - name: Confirm output of show flash
+      #device-api-v4.0/device-rest-api/schema/common/SystemInfoStats.json
+      debug:
+        var: showver_output.firmware_version
+
+    - name: Show tech
+      uri:
+        url: "https://{{ansible_host }}/v1/system"
+        method: GET
+        headers:
+          Content-Type: "application/json"
+          cookie: "{{ login_output.json.sessionId }}"
+        body_format: json
+        return_content: yes
+        validate_certs: False
+      register: showver_output
+
+    - name: Confirm output of show flash
+      #device-api-v4.0/device-rest-api/schema/common/SystemInfoStats.json
+      debug:
+        var: showver_output.firmware_version
+
+    - name: Show log
+      uri:
+        url: "https://{{ansible_host }}/v1/system"
+        method: GET
+        headers:
+          Content-Type: "application/json"
+          cookie: "{{ login_output.json.sessionId }}"
+        body_format: json
+        return_content: yes
+        validate_certs: False
+      register: showver_output
+
+    - name: Confirm output of show flash
+      #device-api-v4.0/device-rest-api/schema/common/SystemInfoStats.json
+      debug:
+        var: showver_output.firmware_version
+
+    - name: wr mem
+      uri:
+        url: "https://{{ansible_host }}/v1/system"
+        method: GET
+        headers:
+          Content-Type: "application/json"
+          cookie: "{{ login_output.json.sessionId }}"
+        body_format: json
+        return_content: yes
+        validate_certs: False
+      register: showver_output
+
+    - name: Confirm output of show flash
+      #device-api-v4.0/device-rest-api/schema/common/SystemInfoStats.json
+      debug:
+        var: showver_output.firmware_version
+
+    - name: Show system
+      uri:
+        url: "https://{{ansible_host }}/v1/system"
+        method: GET
+        headers:
+          Content-Type: "application/json"
+          cookie: "{{ login_output.json.sessionId }}"
+        body_format: json
+        return_content: yes
+        validate_certs: False
+      register: showver_output
+
+    - name: Confirm output of show flash
+      #device-api-v4.0/device-rest-api/schema/common/SystemInfoStats.json
+      debug:
+        var: showver_output.firmware_version
+
+    - name: Show mac addresses
+      uri:
+        url: "https://{{ansible_host }}/v1/system"
+        method: GET
+        headers:
+          Content-Type: "application/json"
+          cookie: "{{ login_output.json.sessionId }}"
+        body_format: json
+        return_content: yes
+        validate_certs: False
+      register: showver_output
+
+    - name: Confirm output of show flash
+      #device-api-v4.0/device-rest-api/schema/common/SystemInfoStats.json
+      debug:
+        var: showver_output.firmware_version
+
+    - name: Show cdp neighbors
+      uri:
+        url: "https://{{ansible_host }}/v1/system"
+        method: GET
+        headers:
+          Content-Type: "application/json"
+          cookie: "{{ login_output.json.sessionId }}"
+        body_format: json
+        return_content: yes
+        validate_certs: False
+      register: showver_output
+
+    - name: Confirm output of show flash
+      #device-api-v4.0/device-rest-api/schema/common/SystemInfoStats.json
+      debug:
+        var: showver_output.firmware_version
+
+    # - name: If default boot image is running on primary, copy to secondary
+
+    # - name: If default boot image is running on secondary, copy to primary
+
+    - name: confirm image version on primary/secondary is the new version
+      uri:
+        url: "https://{{ansible_host }}/v1/cli"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+          cookie: "{{ login_output.json.sessionId }}"
+        body_format: json
+        body:
+          cmd: show flash
+        return_content: yes
+        validate_certs: False
+      register: newimage_output
+
+    - name: Confirm output of show flash
+      debug:
+        var: newimage_output
+
+    - name: Destroy Aruba API Session (Log Out)
+      uri:
+        url: "https://{{ansible_host }}/v1/login_sessions"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+          cookie: "{{ login_output.json.sessionId }}"
+        body_format: json
+        return_content: yes
+        validate_certs: False
