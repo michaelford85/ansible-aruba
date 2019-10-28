@@ -8,106 +8,118 @@
     - ./credentials/aruba_credentials.yml
 
   tasks:
+    - name: Copy Firmware onto Aruba Switch
+      block:
+        - name: Create Aruba API Session (Log In)
+          uri:
+            url: "https://{{ansible_host }}/v3/login_sessions"
+            method: POST
+            headers:
+              Content-Type: "application/json"
+            body:
+              userName: "{{ ARUBA_USERNAME }}"
+              password: "{{ ARUBA_PASSWORD }}"
+            body_format: json
+            return_content: yes
+            validate_certs: False
+          register: login_output
 
-    - name: Create Aruba API Session (Log In)
-      uri:
-        url: "https://{{ansible_host }}/v1/login_sessions"
-        method: POST
-        headers:
-          Content-Type: "application/json"
-        body:
-          userName: "{{ ARUBA_USERNAME }}"
-          password: "{{ ARUBA_PASSWORD }}"
-        body_format: json
-        return_content: yes
-        validate_certs: False
-      register: login_output
+        - name: Confirm session ID
+          debug:
+            var: login_output.json.sessionId
 
-    - name: Confirm session ID
-      debug:
-        var: login_output.json.sessionId
+        - name: Determine where current code is running (show flash)
+          uri:
+            url: "https://{{ansible_host }}/v3/cli"
+            method: POST
+            headers:
+              Content-Type: "application/json"
+              cookie: "{{ login_output.json.sessionId }}"
+            body_format: json
+            body:
+              cmd: show flash
+            return_content: yes
+            validate_certs: False
+          register: showflash_output
 
-    - name: Determine where current code is running (show flash)
-      uri:
-        url: "https://{{ansible_host }}/v1/cli"
-        method: POST
-        headers:
-          Content-Type: "application/json"
-          cookie: "{{ login_output.json.sessionId }}"
-        body_format: json
-        body:
-          cmd: show flash
-        return_content: yes
-        validate_certs: False
-      register: showflash_output
+        - name: Confirm output of show flash
+          debug:
+            var: showflash_output
 
-    - name: Confirm output of show flash
-      debug:
-        var: showflash_output
+        - name: Check image version against versions on both partitions (show ver)
+          uri:
+            url: "https://{{ansible_host }}/v3/system"
+            method: POST
+            headers:
+              Content-Type: "application/json"
+              cookie: "{{ login_output.json.sessionId }}"
+            body_format: json
+            return_content: yes
+            validate_certs: False
+          register: showver_output
 
-    - name: Check image version against versions on both partitions (show ver)
-      uri:
-        url: "https://{{ansible_host }}/v1/system"
-        method: POST
-        headers:
-          Content-Type: "application/json"
-          cookie: "{{ login_output.json.sessionId }}"
-        body_format: json
-        return_content: yes
-        validate_certs: False
-      register: showver_output
+        - name: Confirm output of show flash
+          debug:
+            var: showver_output.firmware_version
 
-    - name: Confirm output of show flash
-      debug:
-        var: showver_output.firmware_version
+        - name: Obtain redundancy management status
+          uri:
+            url: "https://{{ansible_host }}/v3/redundancy_management"
+            method: GET
+            headers:
+              Content-Type: "application/json"
+              cookie: "{{ login_output.json.sessionId }}"
+            body_format: json
+            body:
+              cmd: show flash
+            return_content: yes
+            validate_certs: False
+          register: redundancy_output
 
-    - name: Obtain redundancy management status
-      uri:
-        url: "https://{{ansible_host }}/v1/redundancy_management"
-        method: GET
-        headers:
-          Content-Type: "application/json"
-          cookie: "{{ login_output.json.sessionId }}"
-        body_format: json
-        body:
-          cmd: show flash
-        return_content: yes
-        validate_certs: False
-      register: redundancy_output
+        - name: Confirm redundancy status (shows primary/secondary boot images)
+          debug:
+            var: redundancy_output
 
-    - name: Confirm redundancy status (shows primary/secondary boot images)
-      debug:
-        var: redundancy_output
+        # - name: If default boot image is running on primary, copy to secondary
 
-    # - name: If default boot image is running on primary, copy to secondary
+        # - name: If default boot image is running on secondary, copy to primary
 
-    # - name: If default boot image is running on secondary, copy to primary
+        - name: confirm image version on primary/secondary is the new version
+          uri:
+            url: "https://{{ansible_host }}/v3/cli"
+            method: POST
+            headers:
+              Content-Type: "application/json"
+              cookie: "{{ login_output.json.sessionId }}"
+            body_format: json
+            body:
+              cmd: show flash
+            return_content: yes
+            validate_certs: False
+          register: newimage_output
 
-    - name: confirm image version on primary/secondary is the new version
-      uri:
-        url: "https://{{ansible_host }}/v1/cli"
-        method: POST
-        headers:
-          Content-Type: "application/json"
-          cookie: "{{ login_output.json.sessionId }}"
-        body_format: json
-        body:
-          cmd: show flash
-        return_content: yes
-        validate_certs: False
-      register: newimage_output
+        - name: Confirm output of show flash
+          debug:
+            var: newimage_output
 
-    - name: Confirm output of show flash
-      debug:
-        var: newimage_output
-
-    - name: Destroy Aruba API Session (Log Out)
-      uri:
-        url: "https://{{ansible_host }}/v1/login_sessions"
-        method: POST
-        headers:
-          Content-Type: "application/json"
-          cookie: "{{ login_output.json.sessionId }}"
-        body_format: json
-        return_content: yes
-        validate_certs: False
+        - name: Destroy Aruba API Session (Log Out)
+          uri:
+            url: "https://{{ansible_host }}/v3/login_sessions"
+            method: POST
+            headers:
+              Content-Type: "application/json"
+              cookie: "{{ login_output.json.sessionId }}"
+            body_format: json
+            return_content: yes
+            validate_certs: False
+      rescue:
+        - name: Destroy Aruba API Session (Log Out)
+          uri:
+            url: "https://{{ansible_host }}/v3/login_sessions"
+            method: POST
+            headers:
+              Content-Type: "application/json"
+              cookie: "{{ login_output.json.sessionId }}"
+            body_format: json
+            return_content: yes
+            validate_certs: False

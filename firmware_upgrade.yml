@@ -11,7 +11,7 @@
 
     - name: Create Aruba API Session (Log In)
       uri:
-        url: "https://{{ansible_host }}/v1/login_sessions"
+        url: "https://{{ansible_host }}/v3/login_sessions"
         method: POST
         headers:
           Content-Type: "application/json"
@@ -29,7 +29,7 @@
 
     - name: Check image version against versions on both partitions (show ver)
       uri:
-        url: "https://{{ansible_host }}/v1/system"
+        url: "https://{{ansible_host }}/v3/system"
         method: GET
         headers:
           Content-Type: "application/json"
@@ -46,7 +46,7 @@
 
     - name: Determine if the switch is L2 or L3
       uri:
-        url: "https://{{ansible_host }}/v1/cli"
+        url: "https://{{ansible_host }}/v3/cli"
         method: POST
         headers:
           Content-Type: "application/json"
@@ -65,7 +65,7 @@
     #Check the device environment to make sure it is healthy
     - name: Show modules
       uri:
-        url: "https://{{ansible_host }}/v1/system/status/switch"
+        url: "https://{{ansible_host }}/v3/system/status/switch"
         method: GET
         headers:
           Content-Type: "application/json"
@@ -82,7 +82,7 @@
 
     - name: Show interface status
       uri:
-        url: "https://{{ansible_host }}/v1/system"
+        url: "https://{{ansible_host }}/v3/system"
         method: GET
         headers:
           Content-Type: "application/json"
@@ -100,7 +100,7 @@
 
     - name: Show lldp remote_devices
       uri:
-        url: "https://{{ansible_host }}/v1/system"
+        url: "https://{{ansible_host }}/v3/system"
         method: GET
         headers:
           Content-Type: "application/json"
@@ -117,7 +117,7 @@
 
     - name: Show tech
       uri:
-        url: "https://{{ansible_host }}/v1/system"
+        url: "https://{{ansible_host }}/v3/system"
         method: GET
         headers:
           Content-Type: "application/json"
@@ -134,7 +134,7 @@
 
     - name: Show log
       uri:
-        url: "https://{{ansible_host }}/v1/system"
+        url: "https://{{ansible_host }}/v3/system"
         method: GET
         headers:
           Content-Type: "application/json"
@@ -151,7 +151,7 @@
 
     - name: wr mem
       uri:
-        url: "https://{{ansible_host }}/v1/system"
+        url: "https://{{ansible_host }}/v3/system"
         method: GET
         headers:
           Content-Type: "application/json"
@@ -168,7 +168,7 @@
 
     - name: Show system
       uri:
-        url: "https://{{ansible_host }}/v1/system"
+        url: "https://{{ansible_host }}/v3/system"
         method: GET
         headers:
           Content-Type: "application/json"
@@ -185,7 +185,7 @@
 
     - name: Show mac addresses
       uri:
-        url: "https://{{ansible_host }}/v1/system"
+        url: "https://{{ansible_host }}/v3/system"
         method: GET
         headers:
           Content-Type: "application/json"
@@ -202,7 +202,7 @@
 
     - name: Show cdp neighbors
       uri:
-        url: "https://{{ansible_host }}/v1/system"
+        url: "https://{{ansible_host }}/v3/system"
         method: GET
         headers:
           Content-Type: "application/json"
@@ -223,7 +223,7 @@
 
     - name: confirm image version on primary/secondary is the new version
       uri:
-        url: "https://{{ansible_host }}/v1/cli"
+        url: "https://{{ansible_host }}/v3/cli"
         method: POST
         headers:
           Content-Type: "application/json"
@@ -241,7 +241,7 @@
 
     - name: Destroy Aruba API Session (Log Out)
       uri:
-        url: "https://{{ansible_host }}/v1/login_sessions"
+        url: "https://{{ansible_host }}/v3/login_sessions"
         method: POST
         headers:
           Content-Type: "application/json"
